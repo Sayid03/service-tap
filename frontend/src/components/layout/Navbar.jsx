@@ -1,9 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
 import { authStore } from "../../store/authStore";
+import { useMe } from "../../hooks/useMe";
 
 export default function Navbar() {
   const navigate = useNavigate();
   const isAuthed = authStore.isAuthenticated();
+  const { data: me } = useMe();
 
   const handleLogout = () => {
     authStore.clear();
@@ -18,9 +20,12 @@ export default function Navbar() {
         <nav className="nav-links">
           <Link to="/services">Services</Link>
           <Link to="/providers">Providers</Link>
+
           {isAuthed ? (
             <>
-              <Link to="/bookings">My Bookings</Link>
+              <Link to="/bookings">
+                {me?.role === "provider" ? "Incoming Bookings" : "My Bookings"}
+              </Link>
               <Link to="/dashboard">Dashboard</Link>
               <button onClick={handleLogout}>Logout</button>
             </>

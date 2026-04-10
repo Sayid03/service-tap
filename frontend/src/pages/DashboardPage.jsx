@@ -27,20 +27,34 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid">
-        <div className="card">
-          <h3>Customer actions</h3>
-          <p>Browse services and manage your bookings.</p>
-          <Link to="/services">Browse services</Link>
-          <br />
-          <Link to="/bookings">My bookings</Link>
-        </div>
+        {me.role === "customer" ? (
+          <>
+            <div className="card">
+              <h3>Browse services</h3>
+              <p>Find a provider and create a booking.</p>
+              <Link to="/services">Browse services</Link>
+            </div>
 
-        {me.role === "provider" && (
-          <div className="card">
-            <h3>Provider actions</h3>
-            <p>Manage your provider profile and later your services.</p>
-            <Link to="/provider/profile">Provider profile</Link>
-          </div>
+            <div className="card">
+              <h3>My bookings</h3>
+              <p>Track your current and past bookings.</p>
+              <Link to="/bookings">Open My Bookings</Link>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="card">
+              <h3>Incoming bookings</h3>
+              <p>Review customer requests and update booking statuses.</p>
+              <Link to="/bookings">Manage bookings</Link>
+            </div>
+
+            <div className="card">
+              <h3>Provider profile</h3>
+              <p>Update your bio, region, and availability.</p>
+              <Link to="/provider/profile">Edit provider profile</Link>
+            </div>
+          </>
         )}
       </div>
 
@@ -61,12 +75,6 @@ export default function DashboardPage() {
           </p>
         </div>
       )}
-
-      <div className="card">
-        <h3>Bookings</h3>
-        <p>Review and track your current bookings.</p>
-        <Link to="/bookings">Open My Bookings</Link>
-      </div>
     </section>
   );
 }
