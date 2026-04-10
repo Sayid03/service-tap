@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { getCategories, getServices } from "../api/services";
 import useDebounce from "../hooks/useDebounce";
 
@@ -14,7 +14,21 @@ const initialFilters = {
 };
 
 export default function ServicesPage() {
-  const [filters, setFilters] = useState(initialFilters);
+  const [searchParams] = useSearchParams();
+
+  const [filters, setFilters] = useState(() => ({
+    ...initialFilters,
+    category: searchParams.get("category") || "",
+    search: searchParams.get("search") || "",
+  }));
+
+  useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      category: searchParams.get("category") || prev.category || "",
+      search: searchParams.get("search") || prev.search || "",
+    }));
+  }, [searchParams]);
 
   const debouncedSearch = useDebounce(filters.search, 400);
 
@@ -30,12 +44,7 @@ export default function ServicesPage() {
     queryFn: getCategories,
   });
 
-  const {
-    data,
-    isLoading,
-    isFetching,
-    error,
-  } = useQuery({
+  const { data, isLoading, isFetching, error } = useQuery({
     queryKey: ["services", queryFilters],
     queryFn: () => getServices(queryFilters),
     placeholderData: (previousData) => previousData,
@@ -56,6 +65,8 @@ export default function ServicesPage() {
   const activeFiltersCount = useMemo(() => {
     return Object.values(filters).filter((value) => value !== "").length;
   }, [filters]);
+
+  const isTypingSearch = filters.search !== debouncedSearch;
 
   const handleChange = (e) => {
     setFilters((prev) => ({
@@ -169,7 +180,8 @@ export default function ServicesPage() {
           </button>
           <span>{activeFiltersCount} filter(s) active</span>
           <span>{services.length} service(s) found</span>
-          {isFetching && <span>Updating results...</span>}
+          {isTypingSearch && <span>Typing...</span>}
+          {!isTypingSearch && isFetching && <span>Updating results...</span>}
         </div>
       </div>
 
