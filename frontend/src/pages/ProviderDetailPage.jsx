@@ -4,6 +4,7 @@ import { getProviderById } from "../api/users";
 import { getServices } from "../api/services";
 import AvatarPlaceholder from "../components/ui/AvatarPlaceholder";
 import RatingBadge from "../components/ui/RatingBadge";
+import SkeletonGrid from "../components/ui/SkeletonGrid";
 
 export default function ProviderDetailPage() {
   const { id } = useParams();
@@ -39,7 +40,25 @@ export default function ProviderDetailPage() {
       )
     : [];
 
-  if (providerLoading || servicesLoading) return <p>Loading provider...</p>;
+    if (providerLoading || servicesLoading) {
+      return (
+        <section>
+          <div className="card provider-hero-card" style={{ marginTop: "16px" }}>
+            <div className="entity-head entity-head-large">
+              <div className="skeleton skeleton-avatar-xl"></div>
+              <div style={{ flex: 1 }}>
+                <div className="skeleton skeleton-line medium"></div>
+                <div className="skeleton skeleton-line short"></div>
+              </div>
+            </div>
+          </div>
+    
+          <div style={{ marginTop: "24px" }}>
+            <SkeletonGrid count={3} />
+          </div>
+        </section>
+      );
+    }
   if (providerError || servicesError) return <p>Failed to load provider data.</p>;
   if (!provider) return <p>Provider not found.</p>;
 

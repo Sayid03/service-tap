@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import { getCategories, getServices } from "../api/services";
 import useDebounce from "../hooks/useDebounce";
+import SkeletonGrid from "../components/ui/SkeletonGrid";
+import ServiceVisualPlaceholder from "../components/ui/ServiceVisualPlaceholder";
 
 const initialFilters = {
   search: "",
@@ -186,7 +188,7 @@ export default function ServicesPage() {
       </div>
 
       {isLoading && !data ? (
-        <p>Loading services...</p>
+        <SkeletonGrid count={6} />
       ) : error ? (
         <p>Failed to load services.</p>
       ) : services.length === 0 ? (
@@ -197,6 +199,7 @@ export default function ServicesPage() {
         <div className="grid">
           {services.map((service) => (
             <article key={service.id} className="card">
+              <ServiceVisualPlaceholder category={service.category_name} />
               <h3>{service.title}</h3>
               <p>{service.description}</p>
               <p><strong>Category:</strong> {service.category_name}</p>

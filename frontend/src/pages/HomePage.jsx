@@ -7,6 +7,8 @@ import SectionHeader from "../components/ui/SectionHeader";
 import LoadingBlock from "../components/ui/LoadingBlock";
 import EmptyState from "../components/ui/EmptyState";
 import StatPill from "../components/ui/StatPill";
+import SkeletonGrid from "../components/ui/SkeletonGrid";
+import ServiceVisualPlaceholder from "../components/ui/ServiceVisualPlaceholder";
 
 export default function HomePage() {
   const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
@@ -117,7 +119,7 @@ export default function HomePage() {
         />
 
         {servicesLoading ? (
-          <LoadingBlock text="Loading featured services..." />
+          <SkeletonGrid count={6} />
         ) : featuredServices.length === 0 ? (
           <EmptyState
             title="No services yet"
@@ -129,6 +131,7 @@ export default function HomePage() {
           <div className="grid">
             {featuredServices.map((service) => (
               <article key={service.id} className="card service-card">
+                <ServiceVisualPlaceholder category={service.category_name} />
                 <div className="card-topline">
                   <span className="chip">{service.category_name}</span>
                   <span className="muted-text">
@@ -156,7 +159,7 @@ export default function HomePage() {
         />
 
         {providersLoading ? (
-          <LoadingBlock text="Loading providers..." />
+          <SkeletonGrid count={4} hasAvatar />
         ) : featuredProviders.length === 0 ? (
           <EmptyState
             title="No providers yet"

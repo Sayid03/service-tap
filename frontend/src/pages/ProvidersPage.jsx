@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { getProviders } from "../api/users";
 import AvatarPlaceholder from "../components/ui/AvatarPlaceholder";
 import RatingBadge from "../components/ui/RatingBadge";
+import SkeletonGrid from "../components/ui/SkeletonGrid";
 
 export default function ProvidersPage() {
   const [search, setSearch] = useState("");
@@ -65,7 +66,17 @@ export default function ProvidersPage() {
     setRegion("");
   };
 
-  if (isLoading) return <p>Loading providers...</p>;
+  if (isLoading) {
+    return (
+      <section>
+        <div style={{ marginBottom: "20px" }}>
+          <h1>Providers</h1>
+          <p>Browse providers by name, availability, verification, and region.</p>
+        </div>
+        <SkeletonGrid count={6} hasAvatar />
+      </section>
+    );
+  }
   if (error) return <p>Failed to load providers.</p>;
 
   return (
