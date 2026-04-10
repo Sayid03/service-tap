@@ -10,6 +10,11 @@ export const getProviders = async (params = {}) => {
   return data;
 };
 
+export const getProviderById = async (id) => {
+  const { data } = await api.get(`/users/providers/${id}/`);
+  return data;
+};
+
 export const updateProviderProfile = async (payload) => {
   const { data } = await api.put("/users/provider-profile/", payload);
   return data;

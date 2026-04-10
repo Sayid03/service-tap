@@ -12,6 +12,7 @@ import BookingsPage from "./pages/BookingsPage";
 import ProviderProfilePage from "./pages/ProviderProfilePage";
 import ProviderServicesPage from "./pages/ProviderServicesPage";
 import ProviderServiceFormPage from "./pages/ProviderServiceFormPage";
+import ProviderDetailPage from "./pages/ProviderDetailPage";
 
 export default function App() {
   return (
@@ -78,6 +79,8 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+
+          <Route path="/providers/:id" element={<ProviderDetailPage />} />
         </Routes>
       </Layout>
     </BrowserRouter>
