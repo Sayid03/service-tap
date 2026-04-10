@@ -8,6 +8,7 @@ import {
   updateService,
 } from "../api/services";
 import { useMe } from "../hooks/useMe";
+import toast from "react-hot-toast";
 
 const initialForm = {
   category: "",
@@ -90,7 +91,11 @@ export default function ProviderServiceFormPage() {
       if (isEdit) {
         await queryClient.invalidateQueries({ queryKey: ["service", id] });
       }
+      toast.success(isEdit ? "Service updated successfully" : "Service created successfully");
       navigate("/provider/services");
+    },
+    onError: () => {
+      toast.error(isEdit ? "Failed to update service" : "Failed to create service");
     },
   });
 

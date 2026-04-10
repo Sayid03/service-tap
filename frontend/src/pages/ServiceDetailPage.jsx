@@ -6,6 +6,7 @@ import { createBooking, getBookings } from "../api/bookings";
 import { getReviews, createReview } from "../api/reviews";
 import { authStore } from "../store/authStore";
 import { useMe } from "../hooks/useMe";
+import toast from "react-hot-toast";
 
 function toLocalDatetimeInputValue(date = new Date()) {
   const pad = (n) => String(n).padStart(2, "0");
@@ -71,7 +72,11 @@ export default function ServiceDetailPage() {
   const bookingMutation = useMutation({
     mutationFn: createBooking,
     onSuccess: () => {
+      toast.success("Booking created successfully");
       navigate("/bookings");
+    },
+    onError: () => {
+      toast.error("Failed to create booking");
     },
   });
 
@@ -85,6 +90,10 @@ export default function ServiceDetailPage() {
         rating: 5,
         comment: "",
       });
+      toast.success("Review submitted successfully");
+    },
+    onError: () => {
+      toast.error("Failed to submit review");
     },
   });
 

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import { loginUser } from "../api/auth";
 import { authStore } from "../store/authStore";
 
@@ -19,9 +20,13 @@ export default function LoginPage() {
     try {
       const data = await loginUser(form);
       authStore.setTokens(data);
+      toast.success("Logged in successfully");
       navigate("/dashboard");
     } catch (err) {
-      setError("Invalid username or password.");
+      const message =
+        err?.response?.data?.detail || "Invalid username or password.";
+      setError(message);
+      toast.error(message);
     }
   };
 

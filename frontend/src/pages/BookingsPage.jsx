@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { getBookings, updateBookingStatus } from "../api/bookings";
 import { useMe } from "../hooks/useMe";
+import toast from "react-hot-toast";
 
 function getNextActions(status) {
   switch (status) {
@@ -34,6 +35,10 @@ export default function BookingsPage() {
     mutationFn: ({ id, status }) => updateBookingStatus(id, { status }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["bookings"] });
+      toast.success("Booking status updated");
+    },
+    onError: () => {
+      toast.error("Failed to update booking status");
     },
   });
 

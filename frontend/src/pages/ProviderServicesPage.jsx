@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { deleteService, getServices } from "../api/services";
 import { useMe } from "../hooks/useMe";
+import toast from "react-hot-toast";
 
 export default function ProviderServicesPage() {
   const queryClient = useQueryClient();
@@ -16,6 +17,10 @@ export default function ProviderServicesPage() {
     mutationFn: deleteService,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["services"] });
+      toast.success("Service deleted");
+    },
+    onError: () => {
+      toast.error("Failed to delete service");
     },
   });
 
@@ -65,7 +70,12 @@ export default function ProviderServicesPage() {
                 <Link to={`/services/${service.id}`}>View</Link>
                 <Link to={`/provider/services/${service.id}/edit`}>Edit</Link>
                 <button
-                  onClick={() => deleteMutation.mutate(service.id)}
+                  onClick={() => {
+                    const confirmed = window.confirm("Are you sure you want to delete this service?");
+                    if (confirmed) {
+                      deleteMutation.mutate(service.id);
+                    }
+                  }}
                   disabled={deleteMutation.isPending}
                 >
                   Delete

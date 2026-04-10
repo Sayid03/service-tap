@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import { registerUser } from "../api/auth";
 
 export default function RegisterPage() {
@@ -28,9 +29,14 @@ export default function RegisterPage() {
 
     try {
       await registerUser(form);
+      toast.success("Account created successfully");
       navigate("/login");
     } catch (err) {
-      setError("Registration failed. Check your fields.");
+      const message = err?.response?.data
+        ? JSON.stringify(err.response.data)
+        : "Registration failed. Check your fields.";
+      setError(message);
+      toast.error("Registration failed");
     }
   };
 

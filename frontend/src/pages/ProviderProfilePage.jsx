@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMe } from "../hooks/useMe";
 import { updateProviderProfile } from "../api/users";
+import toast from "react-hot-toast";
 
 export default function ProviderProfilePage() {
   const queryClient = useQueryClient();
@@ -33,6 +34,10 @@ export default function ProviderProfilePage() {
     mutationFn: updateProviderProfile,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["me"] });
+      toast.success("Profile updated successfully");
+    },
+    onError: () => {
+      toast.error("Failed to update profile");
     },
   });
 
