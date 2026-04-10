@@ -23,6 +23,7 @@ export default function Navbar() {
 
           {isAuthed ? (
             <>
+              {me?.role === "provider" && <Link to="/provider/services">My Services</Link>}
               <Link to="/bookings">
                 {me?.role === "provider" ? "Incoming Bookings" : "My Bookings"}
               </Link>
