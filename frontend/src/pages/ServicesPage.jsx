@@ -8,7 +8,11 @@ export default function ServicesPage() {
     queryFn: () => getServices(),
   });
 
-  const services = data?.results || data || [];
+  const services = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.results)
+    ? data.results
+    : [];
 
   if (isLoading) return <p>Loading services...</p>;
   if (error) return <p>Failed to load services.</p>;
@@ -17,20 +21,29 @@ export default function ServicesPage() {
     <section>
       <h1>Services</h1>
 
-      <div className="grid">
-        {services.map((service) => (
-          <article key={service.id} className="card">
-            <h3>{service.title}</h3>
-            <p>{service.description}</p>
-            <p><strong>Category:</strong> {service.category_name}</p>
-            <p><strong>Provider:</strong> {service.provider_username}</p>
-            <p><strong>Location:</strong> {service.location || "Not specified"}</p>
-            <p><strong>Price:</strong> {service.price || "Negotiable"}</p>
-            <p><strong>Rating:</strong> {service.average_rating ?? "No rating yet"}</p>
-            <Link to={`/services/${service.id}`}>View details</Link>
-          </article>
-        ))}
-      </div>
+      {services.length === 0 ? (
+        <p>No services found.</p>
+      ) : (
+        <div className="grid">
+          {services.map((service) => (
+            <article key={service.id} className="card">
+              <h3>{service.title}</h3>
+              <p>{service.description}</p>
+              <p><strong>Category:</strong> {service.category_name}</p>
+              <p><strong>Provider:</strong> {service.provider_username}</p>
+              <p><strong>Location:</strong> {service.location || "Not specified"}</p>
+              <p><strong>Pricing:</strong> {service.pricing_type}</p>
+              <p><strong>Price:</strong> {service.price ?? "Negotiable"}</p>
+              <p>
+                <strong>Rating:</strong>{" "}
+                {service.average_rating ?? "No rating yet"} (
+                {service.reviews_count ?? 0})
+              </p>
+              <Link to={`/services/${service.id}`}>View details</Link>
+            </article>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
