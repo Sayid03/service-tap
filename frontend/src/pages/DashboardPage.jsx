@@ -61,6 +61,12 @@ export default function DashboardPage() {
           </p>
         </div>
       )}
+
+      <div className="card">
+        <h3>Bookings</h3>
+        <p>Review and track your current bookings.</p>
+        <Link to="/bookings">Open My Bookings</Link>
+      </div>
     </section>
   );
 }
