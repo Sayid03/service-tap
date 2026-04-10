@@ -10,6 +10,8 @@ import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
 import BookingsPage from "./pages/BookingsPage";
 import ProviderProfilePage from "./pages/ProviderProfilePage";
+import ProviderServicesPage from "./pages/ProviderServicesPage";
+import ProviderServiceFormPage from "./pages/ProviderServiceFormPage";
 
 export default function App() {
   return (
@@ -46,6 +48,33 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <ProviderProfilePage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/provider/services"
+            element={
+              <ProtectedRoute>
+                <ProviderServicesPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/provider/services/new"
+            element={
+              <ProtectedRoute>
+                <ProviderServiceFormPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/provider/services/:id/edit"
+            element={
+              <ProtectedRoute>
+                <ProviderServiceFormPage />
               </ProtectedRoute>
             }
           />

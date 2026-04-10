@@ -54,6 +54,12 @@ export default function DashboardPage() {
               <p>Update your bio, region, and availability.</p>
               <Link to="/provider/profile">Edit provider profile</Link>
             </div>
+
+            <div className="card">
+              <h3>My services</h3>
+              <p>Create, edit, activate, or remove the services you offer.</p>
+              <Link to="/provider/services">Manage services</Link>
+            </div>
           </>
         )}
       </div>
