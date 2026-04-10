@@ -38,18 +38,24 @@ main.container {
 .navbar {
   background: white;
   border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 40;
 }
 
 .nav-inner {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 16px;
   padding: 18px 0;
+  position: relative;
 }
 
 .brand {
   font-size: 24px;
   font-weight: 700;
+  flex-shrink: 0;
 }
 
 .nav-links {
@@ -66,6 +72,29 @@ main.container {
 
 .nav-links a:hover {
   background: #f3f4f6;
+}
+
+.menu-toggle {
+  display: none;
+  width: 44px;
+  height: 44px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+  background: white;
+  color: #111827;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.menu-toggle span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: #111827;
+  border-radius: 999px;
 }
 
 .hero {
@@ -548,5 +577,170 @@ button {
   .cta-strip {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    width: min(100%, calc(100% - 24px));
+  }
+
+  .nav-inner {
+    padding: 14px 0;
+  }
+
+  .brand {
+    font-size: 22px;
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+  }
+
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    padding: 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .nav-links.nav-links-open {
+    display: flex;
+  }
+
+  .nav-links a,
+  .nav-links button {
+    width: 100%;
+    text-align: left;
+    justify-content: flex-start;
+    background: transparent;
+    color: #111827;
+    border: none;
+    padding: 12px 10px;
+    border-radius: 12px;
+  }
+
+  .nav-links a:hover,
+  .nav-links button:hover {
+    background: #f3f4f6;
+  }
+
+  .hero {
+    padding: 40px 0;
+  }
+
+  .hero-polished {
+    padding: 28px 0 12px;
+    gap: 18px;
+  }
+
+  .hero-copy h1 {
+    font-size: 34px;
+    line-height: 1.1;
+  }
+
+  .hero-description {
+    font-size: 16px;
+  }
+
+  .section-title {
+    font-size: 28px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 20px 0 36px;
+  }
+
+  .category-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card,
+  .form-card {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .service-visual,
+  .skeleton-image {
+    height: 140px;
+  }
+
+  .avatar-xl {
+    width: 72px;
+    height: 72px;
+    font-size: 24px;
+  }
+
+  .entity-head {
+    align-items: flex-start;
+  }
+
+  .hero-stats {
+    gap: 10px;
+  }
+
+  .stat-pill {
+    min-width: 96px;
+    padding: 12px 14px;
+  }
+
+  .filters-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .load-more-wrap {
+    padding: 0 0 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    width: min(100%, calc(100% - 20px));
+  }
+
+  .brand {
+    font-size: 20px;
+  }
+
+  .hero-copy h1 {
+    font-size: 30px;
+  }
+
+  .section-title {
+    font-size: 24px;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .card-topline {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .provider-hero-meta {
+    align-items: flex-start;
+  }
+
+  .section-space {
+    margin-top: 36px;
   }
 }
