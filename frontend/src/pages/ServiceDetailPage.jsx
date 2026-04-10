@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { getServiceById } from "../api/services";
-import { createBooking } from "../api/bookings";
+import { createBooking, getBookings } from "../api/bookings";
+import { getReviews, createReview } from "../api/reviews";
 import { authStore } from "../store/authStore";
+import { useMe } from "../hooks/useMe";
 
 function toLocalDatetimeInputValue(date = new Date()) {
   const pad = (n) => String(n).padStart(2, "0");
@@ -18,7 +20,10 @@ function toLocalDatetimeInputValue(date = new Date()) {
 export default function ServiceDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const isAuthed = authStore.isAuthenticated();
+
+  const { data: me } = useMe();
 
   const { data: service, isLoading, error } = useQuery({
     queryKey: ["service", id],
@@ -26,11 +31,41 @@ export default function ServiceDetailPage() {
     enabled: !!id,
   });
 
+  const { data: reviewsData, isLoading: reviewsLoading } = useQuery({
+    queryKey: ["reviews", "service", id],
+    queryFn: () => getReviews({ service: id }),
+    enabled: !!id,
+  });
+
+  const { data: bookingsData } = useQuery({
+    queryKey: ["bookings"],
+    queryFn: () => getBookings(),
+    enabled: isAuthed,
+  });
+
+  const reviews = Array.isArray(reviewsData)
+    ? reviewsData
+    : Array.isArray(reviewsData?.results)
+    ? reviewsData.results
+    : [];
+
+  const bookings = Array.isArray(bookingsData)
+    ? bookingsData
+    : Array.isArray(bookingsData?.results)
+    ? bookingsData.results
+    : [];
+
   const minDateTime = useMemo(() => toLocalDatetimeInputValue(new Date()), []);
-  const [form, setForm] = useState({
+  const [bookingForm, setBookingForm] = useState({
     booking_date: "",
     address: "",
     notes: "",
+  });
+
+  const [reviewForm, setReviewForm] = useState({
+    booking: "",
+    rating: 5,
+    comment: "",
   });
 
   const bookingMutation = useMutation({
@@ -40,8 +75,28 @@ export default function ServiceDetailPage() {
     },
   });
 
-  const handleChange = (e) => {
-    setForm((prev) => ({
+  const reviewMutation = useMutation({
+    mutationFn: createReview,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["reviews", "service", id] });
+      await queryClient.invalidateQueries({ queryKey: ["bookings"] });
+      setReviewForm({
+        booking: "",
+        rating: 5,
+        comment: "",
+      });
+    },
+  });
+
+  const handleBookingChange = (e) => {
+    setBookingForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleReviewChange = (e) => {
+    setReviewForm((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
@@ -52,11 +107,33 @@ export default function ServiceDetailPage() {
 
     bookingMutation.mutate({
       service: Number(id),
-      booking_date: form.booking_date,
-      address: form.address,
-      notes: form.notes,
+      booking_date: bookingForm.booking_date,
+      address: bookingForm.address,
+      notes: bookingForm.notes,
     });
   };
+
+  const handleReviewSubmit = (e) => {
+    e.preventDefault();
+
+    reviewMutation.mutate({
+      booking: Number(reviewForm.booking),
+      rating: Number(reviewForm.rating),
+      comment: reviewForm.comment,
+    });
+  };
+
+  const reviewedBookingIds = new Set(reviews.map((review) => review.booking));
+
+  const eligibleBookings =
+    me?.role === "customer"
+      ? bookings.filter(
+          (booking) =>
+            String(booking.service) === String(id) &&
+            booking.status === "completed" &&
+            !reviewedBookingIds.has(booking.id)
+        )
+      : [];
 
   if (isLoading) return <p>Loading service...</p>;
   if (error) return <p>Failed to load service details.</p>;
@@ -101,8 +178,8 @@ export default function ServiceDetailPage() {
                 type="datetime-local"
                 name="booking_date"
                 min={minDateTime}
-                value={form.booking_date}
-                onChange={handleChange}
+                value={bookingForm.booking_date}
+                onChange={handleBookingChange}
                 required
               />
             </label>
@@ -113,8 +190,8 @@ export default function ServiceDetailPage() {
                 type="text"
                 name="address"
                 placeholder="Enter service address"
-                value={form.address}
-                onChange={handleChange}
+                value={bookingForm.address}
+                onChange={handleBookingChange}
                 required
               />
             </label>
@@ -125,8 +202,8 @@ export default function ServiceDetailPage() {
                 name="notes"
                 placeholder="Add details for the provider"
                 rows={4}
-                value={form.notes}
-                onChange={handleChange}
+                value={bookingForm.notes}
+                onChange={handleBookingChange}
               />
             </label>
 
@@ -144,6 +221,108 @@ export default function ServiceDetailPage() {
           </form>
         )}
       </div>
+
+      <div className="card" style={{ marginTop: "16px" }}>
+        <h2>Customer Reviews</h2>
+
+        {reviewsLoading ? (
+          <p>Loading reviews...</p>
+        ) : reviews.length === 0 ? (
+          <p>No reviews yet.</p>
+        ) : (
+          <div style={{ display: "grid", gap: "12px" }}>
+            {reviews.map((review) => (
+              <div key={review.id} className="card">
+                <p><strong>{review.customer_username}</strong></p>
+                <p><strong>Rating:</strong> {review.rating}/5</p>
+                <p>{review.comment || "No comment provided."}</p>
+                <p>
+                  <small>
+                    {review.created_at
+                      ? new Date(review.created_at).toLocaleString()
+                      : ""}
+                  </small>
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {isAuthed && me?.role === "customer" && (
+        <div className="card" style={{ marginTop: "16px" }}>
+          <h2>Leave a Review</h2>
+
+          {eligibleBookings.length === 0 ? (
+            <p>
+              You can leave a review only after one of your bookings for this service is completed.
+            </p>
+          ) : (
+            <form onSubmit={handleReviewSubmit} className="form-card" style={{ maxWidth: "100%" }}>
+              <label>
+                Completed booking
+                <select
+                  name="booking"
+                  value={reviewForm.booking}
+                  onChange={handleReviewChange}
+                  required
+                >
+                  <option value="">Select completed booking</option>
+                  {eligibleBookings.map((booking) => (
+                    <option key={booking.id} value={booking.id}>
+                      #{booking.id} — {new Date(booking.booking_date).toLocaleString()}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label>
+                Rating
+                <select
+                  name="rating"
+                  value={reviewForm.rating}
+                  onChange={handleReviewChange}
+                  required
+                >
+                  <option value={5}>5 - Excellent</option>
+                  <option value={4}>4 - Good</option>
+                  <option value={3}>3 - Okay</option>
+                  <option value={2}>2 - Poor</option>
+                  <option value={1}>1 - Bad</option>
+                </select>
+              </label>
+
+              <label>
+                Comment
+                <textarea
+                  name="comment"
+                  rows={4}
+                  placeholder="Share your experience"
+                  value={reviewForm.comment}
+                  onChange={handleReviewChange}
+                  required
+                />
+              </label>
+
+              <button type="submit" disabled={reviewMutation.isPending}>
+                {reviewMutation.isPending ? "Submitting..." : "Submit Review"}
+              </button>
+
+              {reviewMutation.isError && (
+                <p style={{ color: "crimson" }}>
+                  {reviewMutation.error?.response?.data
+                    ? JSON.stringify(reviewMutation.error.response.data)
+                    : "Failed to submit review."}
+                </p>
+              )}
+
+              {reviewMutation.isSuccess && (
+                <p>Review submitted successfully.</p>
+              )}
+            </form>
+          )}
+        </div>
+      )}
     </section>
   );
 }
