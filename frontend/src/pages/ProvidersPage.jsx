@@ -1,39 +1,65 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { getProviders } from "../api/users";
 import AvatarPlaceholder from "../components/ui/AvatarPlaceholder";
 import RatingBadge from "../components/ui/RatingBadge";
 import SkeletonGrid from "../components/ui/SkeletonGrid";
+import { getPageFromUrl, normalizePaginatedResponse } from "../utils/pagination";
 
 export default function ProvidersPage() {
   const [search, setSearch] = useState("");
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [availableOnly, setAvailableOnly] = useState(false);
   const [region, setRegion] = useState("");
+  const [page, setPage] = useState(1);
+  const [allProviders, setAllProviders] = useState([]);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["providers"],
-    queryFn: () => getProviders(),
+  const { data, isLoading, isFetching, error } = useQuery({
+    queryKey: ["providers", page],
+    queryFn: () => getProviders({ page }),
+    placeholderData: (previousData) => previousData,
   });
 
-  const providers = Array.isArray(data)
-    ? data
-    : Array.isArray(data?.results)
-    ? data.results
-    : [];
+  const normalized = normalizePaginatedResponse(data);
+  const providers = normalized.items;
+  const nextPage = getPageFromUrl(normalized.next);
+
+  useEffect(() => {
+    if (!data) return;
+
+    if (page === 1) {
+      setAllProviders(providers);
+      return;
+    }
+
+    setAllProviders((prev) => {
+      const existingIds = new Set(prev.map((item) => item.id));
+      const merged = [...prev];
+
+      providers.forEach((item) => {
+        if (!existingIds.has(item.id)) {
+          merged.push(item);
+        }
+      });
+
+      return merged;
+    });
+  }, [data, providers, page]);
+
+  const sourceProviders = normalized.paginated ? allProviders : providers;
 
   const regions = useMemo(() => {
     const uniqueRegions = new Set(
-      providers
+      sourceProviders
         .map((provider) => provider.provider_profile?.region)
         .filter(Boolean)
     );
     return Array.from(uniqueRegions).sort();
-  }, [providers]);
+  }, [sourceProviders]);
 
   const filteredProviders = useMemo(() => {
-    return providers.filter((provider) => {
+    return sourceProviders.filter((provider) => {
       const fullName = [provider.first_name, provider.last_name]
         .filter(Boolean)
         .join(" ")
@@ -57,7 +83,7 @@ export default function ProvidersPage() {
 
       return providerSearch && providerVerified && providerAvailable && providerRegion;
     });
-  }, [providers, search, verifiedOnly, availableOnly, region]);
+  }, [sourceProviders, search, verifiedOnly, availableOnly, region]);
 
   const resetFilters = () => {
     setSearch("");
@@ -66,7 +92,7 @@ export default function ProvidersPage() {
     setRegion("");
   };
 
-  if (isLoading) {
+  if (isLoading && !data) {
     return (
       <section>
         <div style={{ marginBottom: "20px" }}>
@@ -77,6 +103,7 @@ export default function ProvidersPage() {
       </section>
     );
   }
+
   if (error) return <p>Failed to load providers.</p>;
 
   return (
@@ -134,7 +161,8 @@ export default function ProvidersPage() {
             Reset filters
           </button>
 
-          <span>{filteredProviders.length} provider(s) found</span>
+          <span>{filteredProviders.length} provider(s) shown</span>
+          {isFetching && <span>Updating results...</span>}
         </div>
       </div>
 
@@ -143,51 +171,66 @@ export default function ProvidersPage() {
           <p>No providers found.</p>
         </div>
       ) : (
-        <div className="grid">
-          {filteredProviders.map((provider) => {
-            const fullName = [provider.first_name, provider.last_name]
-              .filter(Boolean)
-              .join(" ");
-            const displayName = fullName || provider.username;
+        <>
+          <div className="grid">
+            {filteredProviders.map((provider) => {
+              const fullName = [provider.first_name, provider.last_name]
+                .filter(Boolean)
+                .join(" ");
+              const displayName = fullName || provider.username;
 
-            return (
-              <article key={provider.id} className="card polished-card">
-                <div className="entity-head">
-                  <AvatarPlaceholder name={displayName} size="lg" />
-                  <div className="entity-head-text">
-                    <h3>{displayName}</h3>
-                    <p>@{provider.username}</p>
+              return (
+                <article key={provider.id} className="card polished-card">
+                  <div className="entity-head">
+                    <AvatarPlaceholder name={displayName} size="lg" />
+                    <div className="entity-head-text">
+                      <h3>{displayName}</h3>
+                      <p>@{provider.username}</p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="card-topline">
-                  <span className="chip">
-                    {provider.is_verified_provider ? "Verified" : "Provider"}
-                  </span>
-                  <RatingBadge
-                    rating={provider.average_rating}
-                    reviewsCount={provider.reviews_count}
-                  />
-                </div>
+                  <div className="card-topline">
+                    <span className="chip">
+                      {provider.is_verified_provider ? "Verified" : "Provider"}
+                    </span>
+                    <RatingBadge
+                      rating={provider.average_rating}
+                      reviewsCount={provider.reviews_count}
+                    />
+                  </div>
 
-                <p className="provider-bio-preview">
-                  {provider.provider_profile?.bio || "No bio provided yet."}
-                </p>
+                  <p className="provider-bio-preview">
+                    {provider.provider_profile?.bio || "No bio provided yet."}
+                  </p>
 
-                <div className="meta-list">
-                  <p><strong>Region:</strong> {provider.provider_profile?.region || "Not specified"}</p>
-                  <p><strong>District:</strong> {provider.provider_profile?.district || "Not specified"}</p>
-                  <p><strong>Available:</strong> {provider.provider_profile?.is_available ? "Yes" : "No"}</p>
-                  <p><strong>Services:</strong> {provider.services_count ?? 0}</p>
-                </div>
+                  <div className="meta-list">
+                    <p><strong>Region:</strong> {provider.provider_profile?.region || "Not specified"}</p>
+                    <p><strong>District:</strong> {provider.provider_profile?.district || "Not specified"}</p>
+                    <p><strong>Available:</strong> {provider.provider_profile?.is_available ? "Yes" : "No"}</p>
+                    <p><strong>Services:</strong> {provider.services_count ?? 0}</p>
+                  </div>
 
-                <Link to={`/providers/${provider.id}`} className="btn">
-                  View provider
-                </Link>
-              </article>
-            );
-          })}
-        </div>
+                  <Link to={`/providers/${provider.id}`} className="btn">
+                    View provider
+                  </Link>
+                </article>
+              );
+            })}
+          </div>
+
+          {normalized.paginated && nextPage && (
+            <div className="load-more-wrap">
+              <button
+                className="btn"
+                type="button"
+                onClick={() => setPage(Number(nextPage))}
+                disabled={isFetching}
+              >
+                {isFetching ? "Loading..." : "Load more"}
+              </button>
+            </div>
+          )}
+        </>
       )}
     </section>
   );

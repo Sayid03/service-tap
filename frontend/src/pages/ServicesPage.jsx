@@ -5,6 +5,7 @@ import { getCategories, getServices } from "../api/services";
 import useDebounce from "../hooks/useDebounce";
 import SkeletonGrid from "../components/ui/SkeletonGrid";
 import ServiceVisualPlaceholder from "../components/ui/ServiceVisualPlaceholder";
+import { getPageFromUrl, normalizePaginatedResponse } from "../utils/pagination";
 
 const initialFilters = {
   search: "",
@@ -24,6 +25,9 @@ export default function ServicesPage() {
     search: searchParams.get("search") || "",
   }));
 
+  const [page, setPage] = useState(1);
+  const [allServices, setAllServices] = useState([]);
+
   useEffect(() => {
     setFilters((prev) => ({
       ...prev,
@@ -38,8 +42,9 @@ export default function ServicesPage() {
     return {
       ...filters,
       search: debouncedSearch,
+      page,
     };
-  }, [filters, debouncedSearch]);
+  }, [filters, debouncedSearch, page]);
 
   const { data: categoriesData } = useQuery({
     queryKey: ["categories"],
@@ -58,11 +63,42 @@ export default function ServicesPage() {
     ? categoriesData.results
     : [];
 
-  const services = Array.isArray(data)
-    ? data
-    : Array.isArray(data?.results)
-    ? data.results
-    : [];
+  const normalized = normalizePaginatedResponse(data);
+  const services = normalized.items;
+  const nextPage = getPageFromUrl(normalized.next);
+
+  useEffect(() => {
+    if (!data) return;
+
+    if (page === 1) {
+      setAllServices(services);
+      return;
+    }
+
+    setAllServices((prev) => {
+      const existingIds = new Set(prev.map((item) => item.id));
+      const merged = [...prev];
+
+      services.forEach((item) => {
+        if (!existingIds.has(item.id)) {
+          merged.push(item);
+        }
+      });
+
+      return merged;
+    });
+  }, [data, services, page]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [
+    debouncedSearch,
+    filters.category,
+    filters.pricing_type,
+    filters.location,
+    filters.min_rating,
+    filters.ordering,
+  ]);
 
   const activeFiltersCount = useMemo(() => {
     return Object.values(filters).filter((value) => value !== "").length;
@@ -79,7 +115,10 @@ export default function ServicesPage() {
 
   const resetFilters = () => {
     setFilters(initialFilters);
+    setPage(1);
   };
+
+  const displayedServices = normalized.paginated ? allServices : services;
 
   return (
     <section>
@@ -181,7 +220,7 @@ export default function ServicesPage() {
             Reset filters
           </button>
           <span>{activeFiltersCount} filter(s) active</span>
-          <span>{services.length} service(s) found</span>
+          <span>{displayedServices.length} service(s) shown</span>
           {isTypingSearch && <span>Typing...</span>}
           {!isTypingSearch && isFetching && <span>Updating results...</span>}
         </div>
@@ -191,30 +230,54 @@ export default function ServicesPage() {
         <SkeletonGrid count={6} />
       ) : error ? (
         <p>Failed to load services.</p>
-      ) : services.length === 0 ? (
+      ) : displayedServices.length === 0 ? (
         <div className="card">
           <p>No services found.</p>
         </div>
       ) : (
-        <div className="grid">
-          {services.map((service) => (
-            <article key={service.id} className="card">
-              <ServiceVisualPlaceholder category={service.category_name} />
-              <h3>{service.title}</h3>
-              <p>{service.description}</p>
-              <p><strong>Category:</strong> {service.category_name}</p>
-              <p><strong>Provider:</strong> {service.provider_username}</p>
-              <p><strong>Location:</strong> {service.location || "Not specified"}</p>
-              <p><strong>Pricing:</strong> {service.pricing_type}</p>
-              <p><strong>Price:</strong> {service.price ?? "Negotiable"}</p>
-              <p>
-                <strong>Rating:</strong>{" "}
-                {service.average_rating ?? "No rating yet"} ({service.reviews_count ?? 0})
-              </p>
-              <Link to={`/services/${service.id}`}>View details</Link>
-            </article>
-          ))}
-        </div>
+        <>
+          <div className="grid">
+            {displayedServices.map((service) => (
+              <article key={service.id} className="card polished-card">
+                <ServiceVisualPlaceholder category={service.category_name} />
+
+                <div className="card-topline">
+                  <span className="chip">{service.category_name}</span>
+                  <span className="muted-text">
+                    {service.average_rating ?? "New"} ★
+                  </span>
+                </div>
+
+                <h3>{service.title}</h3>
+                <p>{service.description}</p>
+
+                <div className="meta-list">
+                  <p><strong>Provider:</strong> {service.provider_username}</p>
+                  <p><strong>Location:</strong> {service.location || "Not specified"}</p>
+                  <p><strong>Pricing:</strong> {service.pricing_type}</p>
+                  <p><strong>Price:</strong> {service.price ?? "Negotiable"}</p>
+                </div>
+
+                <Link to={`/services/${service.id}`} className="btn">
+                  View details
+                </Link>
+              </article>
+            ))}
+          </div>
+
+          {normalized.paginated && nextPage && (
+            <div className="load-more-wrap">
+              <button
+                className="btn"
+                type="button"
+                onClick={() => setPage(Number(nextPage))}
+                disabled={isFetching}
+              >
+                {isFetching ? "Loading..." : "Load more"}
+              </button>
+            </div>
+          )}
+        </>
       )}
     </section>
   );

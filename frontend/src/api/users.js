@@ -6,7 +6,13 @@ export const getMe = async () => {
 };
 
 export const getProviders = async (params = {}) => {
-  const { data } = await api.get("/users/providers/", { params });
+  const cleanedParams = Object.fromEntries(
+    Object.entries(params).filter(
+      ([, value]) => value !== "" && value !== null && value !== undefined
+    )
+  );
+
+  const { data } = await api.get("/users/providers/", { params: cleanedParams });
   return data;
 };
 
