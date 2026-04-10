@@ -1,7 +1,13 @@
 import { api } from "./client";
 
 export const getServices = async (params = {}) => {
-  const { data } = await api.get("/services/", { params });
+  const cleanedParams = Object.fromEntries(
+    Object.entries(params).filter(
+      ([, value]) => value !== "" && value !== null && value !== undefined
+    )
+  );
+
+  const { data } = await api.get("/services/", { params: cleanedParams });
   return data;
 };
 
