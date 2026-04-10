@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { getProviderById } from "../api/users";
 import { getServices } from "../api/services";
+import AvatarPlaceholder from "../components/ui/AvatarPlaceholder";
+import RatingBadge from "../components/ui/RatingBadge";
 
 export default function ProviderDetailPage() {
   const { id } = useParams();
@@ -44,38 +46,41 @@ export default function ProviderDetailPage() {
   const fullName = [provider.first_name, provider.last_name]
     .filter(Boolean)
     .join(" ");
+  const displayName = fullName || provider.username;
 
   return (
     <section>
       <Link to="/providers">← Back to providers</Link>
 
-      <div className="card" style={{ marginTop: "16px" }}>
-        <h1>{fullName || provider.username}</h1>
+      <div className="card provider-hero-card" style={{ marginTop: "16px" }}>
+        <div className="entity-head entity-head-large">
+          <AvatarPlaceholder name={displayName} size="xl" />
+          <div className="entity-head-text">
+            <h1>{displayName}</h1>
+            <p>@{provider.username}</p>
+          </div>
+        </div>
 
-        <p><strong>Username:</strong> {provider.username}</p>
-        <p>
-          <strong>Verified provider:</strong>{" "}
-          {provider.is_verified_provider ? "Yes" : "No"}
-        </p>
-        <p>
-          <strong>Rating:</strong>{" "}
-          {provider.average_rating ?? "No rating yet"} (
-          {provider.reviews_count ?? 0} reviews)
-        </p>
-        <p><strong>Services count:</strong> {provider.services_count ?? 0}</p>
+        <div className="provider-hero-meta">
+          <span className="chip">
+            {provider.is_verified_provider ? "Verified" : "Provider"}
+          </span>
+          <RatingBadge
+            rating={provider.average_rating}
+            reviewsCount={provider.reviews_count}
+          />
+          <span className="soft-pill">
+            {provider.services_count ?? 0} services
+          </span>
+        </div>
+
         <p><strong>Bio:</strong> {provider.provider_profile?.bio || "Not provided"}</p>
         <p>
           <strong>Experience:</strong>{" "}
           {provider.provider_profile?.experience_years ?? "Not specified"} years
         </p>
-        <p>
-          <strong>Region:</strong>{" "}
-          {provider.provider_profile?.region || "Not specified"}
-        </p>
-        <p>
-          <strong>District:</strong>{" "}
-          {provider.provider_profile?.district || "Not specified"}
-        </p>
+        <p><strong>Region:</strong> {provider.provider_profile?.region || "Not specified"}</p>
+        <p><strong>District:</strong> {provider.provider_profile?.district || "Not specified"}</p>
         <p>
           <strong>Availability:</strong>{" "}
           {provider.provider_profile?.is_available ? "Available" : "Unavailable"}
@@ -92,19 +97,27 @@ export default function ProviderDetailPage() {
         ) : (
           <div className="grid">
             {providerServices.map((service) => (
-              <article key={service.id} className="card">
+              <article key={service.id} className="card polished-card">
+                <div className="card-topline">
+                  <span className="chip">{service.category_name}</span>
+                  <RatingBadge
+                    rating={service.average_rating}
+                    reviewsCount={service.reviews_count}
+                  />
+                </div>
+
                 <h3>{service.title}</h3>
                 <p>{service.description}</p>
-                <p><strong>Category:</strong> {service.category_name}</p>
-                <p><strong>Pricing:</strong> {service.pricing_type}</p>
-                <p><strong>Price:</strong> {service.price ?? "Negotiable"}</p>
-                <p><strong>Location:</strong> {service.location || "Not specified"}</p>
-                <p>
-                  <strong>Rating:</strong>{" "}
-                  {service.average_rating ?? "No rating yet"} (
-                  {service.reviews_count ?? 0})
-                </p>
-                <Link to={`/services/${service.id}`}>View service</Link>
+
+                <div className="meta-list">
+                  <p><strong>Pricing:</strong> {service.pricing_type}</p>
+                  <p><strong>Price:</strong> {service.price ?? "Negotiable"}</p>
+                  <p><strong>Location:</strong> {service.location || "Not specified"}</p>
+                </div>
+
+                <Link to={`/services/${service.id}`} className="btn">
+                  View service
+                </Link>
               </article>
             ))}
           </div>

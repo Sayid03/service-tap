@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { getProviders } from "../api/users";
+import AvatarPlaceholder from "../components/ui/AvatarPlaceholder";
+import RatingBadge from "../components/ui/RatingBadge";
 
 export default function ProvidersPage() {
   const [search, setSearch] = useState("");
@@ -135,35 +137,42 @@ export default function ProvidersPage() {
             const fullName = [provider.first_name, provider.last_name]
               .filter(Boolean)
               .join(" ");
+            const displayName = fullName || provider.username;
 
             return (
-              <article key={provider.id} className="card">
-                <h3>{fullName || provider.username}</h3>
-                <p><strong>Username:</strong> {provider.username}</p>
-                <p>
-                  <strong>Verified:</strong>{" "}
-                  {provider.is_verified_provider ? "Yes" : "No"}
-                </p>
-                <p>
-                  <strong>Rating:</strong>{" "}
-                  {provider.average_rating ?? "No rating yet"} (
-                  {provider.reviews_count ?? 0} reviews)
-                </p>
-                <p><strong>Services:</strong> {provider.services_count ?? 0}</p>
-                <p>
-                  <strong>Region:</strong>{" "}
-                  {provider.provider_profile?.region || "Not specified"}
-                </p>
-                <p>
-                  <strong>District:</strong>{" "}
-                  {provider.provider_profile?.district || "Not specified"}
-                </p>
-                <p>
-                  <strong>Available:</strong>{" "}
-                  {provider.provider_profile?.is_available ? "Yes" : "No"}
+              <article key={provider.id} className="card polished-card">
+                <div className="entity-head">
+                  <AvatarPlaceholder name={displayName} size="lg" />
+                  <div className="entity-head-text">
+                    <h3>{displayName}</h3>
+                    <p>@{provider.username}</p>
+                  </div>
+                </div>
+
+                <div className="card-topline">
+                  <span className="chip">
+                    {provider.is_verified_provider ? "Verified" : "Provider"}
+                  </span>
+                  <RatingBadge
+                    rating={provider.average_rating}
+                    reviewsCount={provider.reviews_count}
+                  />
+                </div>
+
+                <p className="provider-bio-preview">
+                  {provider.provider_profile?.bio || "No bio provided yet."}
                 </p>
 
-                <Link to={`/providers/${provider.id}`}>View provider</Link>
+                <div className="meta-list">
+                  <p><strong>Region:</strong> {provider.provider_profile?.region || "Not specified"}</p>
+                  <p><strong>District:</strong> {provider.provider_profile?.district || "Not specified"}</p>
+                  <p><strong>Available:</strong> {provider.provider_profile?.is_available ? "Yes" : "No"}</p>
+                  <p><strong>Services:</strong> {provider.services_count ?? 0}</p>
+                </div>
+
+                <Link to={`/providers/${provider.id}`} className="btn">
+                  View provider
+                </Link>
               </article>
             );
           })}
