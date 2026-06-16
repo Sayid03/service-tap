@@ -103,7 +103,7 @@ export default function HomePage() {
               <div key={category.id} className="card category-card">
                 <h3>{category.name}</h3>
                 <p>{category.description || "Explore services in this category."}</p>
-                <Link to={`/services?category=${category.id}`}>Browse category</Link>
+                <Link to={`/services?category=${category.id}`} className="btn-blue-sky">Browse category</Link>
               </div>
             ))}
           </div>
@@ -143,7 +143,7 @@ export default function HomePage() {
                 <p><strong>Provider:</strong> {service.provider_username}</p>
                 <p><strong>Location:</strong> {service.location || "Not specified"}</p>
                 <p><strong>Price:</strong> {service.price ?? "Negotiable"}</p>
-                <Link to={`/services/${service.id}`}>View details</Link>
+                <Link to={`/services/${service.id}`} className="btn-blue">View details</Link>
               </article>
             ))}
           </div>
@@ -187,7 +187,7 @@ export default function HomePage() {
                   <p><strong>Region:</strong> {provider.provider_profile?.region || "Not specified"}</p>
                   <p><strong>District:</strong> {provider.provider_profile?.district || "Not specified"}</p>
                   <p><strong>Services:</strong> {provider.services_count ?? 0}</p>
-                  <Link to={`/providers/${provider.id}`}>View provider</Link>
+                  <Link to={`/providers/${provider.id}`} className="btn-blue-sky">View provider</Link>
                 </article>
               );
             })}

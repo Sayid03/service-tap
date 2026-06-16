@@ -46,19 +46,19 @@ export default function DashboardPage() {
             <div className="card">
               <h3>Incoming bookings</h3>
               <p>Review customer requests and update booking statuses.</p>
-              <Link to="/bookings">Manage bookings</Link>
+              <Link to="/bookings" className="btn-yellow-mustard">Manage bookings</Link>
             </div>
 
             <div className="card">
               <h3>Provider profile</h3>
               <p>Update your bio, region, and availability.</p>
-              <Link to="/provider/profile">Edit provider profile</Link>
+              <Link to="/provider/profile" className="btn-yellow">Edit provider profile</Link>
             </div>
 
             <div className="card">
               <h3>My services</h3>
               <p>Create, edit, activate, or remove the services you offer.</p>
-              <Link to="/provider/services">Manage services</Link>
+              <Link to="/provider/services" className="btn-yellow-mustard">Manage services</Link>
             </div>
           </>
         )}

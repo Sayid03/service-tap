@@ -22,6 +22,10 @@ function formatStatusLabel(status) {
   return status.charAt(0).toUpperCase() + status.slice(1);
 }
 
+function canCustomerCancel(status) {
+  return status === "pending" || status === "accepted";
+}
+
 export default function BookingsPage() {
   const queryClient = useQueryClient();
   const { data: me, isLoading: meLoading } = useMe();
@@ -123,6 +127,25 @@ export default function BookingsPage() {
                       ? JSON.stringify(statusMutation.error.response.data)
                       : "Failed to update booking status."}
                   </p>
+                )}
+
+                {!isProvider && canCustomerCancel(booking.status) && (
+                  <div style={{ marginTop: "12px" }}>
+                    <button
+                      onClick={() => {
+                        if (window.confirm("Are you sure you want to cancel this booking?")) {
+                          statusMutation.mutate({
+                            id: booking.id,
+                            status: "cancelled",
+                          });
+                        }
+                      }}
+                      disabled={statusMutation.isPending}
+                      className="btn-red-primary"
+                    >
+                      Cancel Booking
+                    </button>
+                  </div>
                 )}
               </article>
             );

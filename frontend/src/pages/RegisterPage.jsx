@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { registerUser } from "../api/auth";
+import { getErrorMessage } from "../utils/errorUtils";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -32,11 +33,10 @@ export default function RegisterPage() {
       toast.success("Account created successfully");
       navigate("/login");
     } catch (err) {
-      const message = err?.response?.data
-        ? JSON.stringify(err.response.data)
-        : "Registration failed. Check your fields.";
+      const message = getErrorMessage(err);
+    
       setError(message);
-      toast.error("Registration failed");
+      toast.error(message);
     }
   };
 
@@ -57,7 +57,11 @@ export default function RegisterPage() {
         <input name="password" type="password" placeholder="Password" value={form.password} onChange={handleChange} />
         <input name="confirm_password" type="password" placeholder="Confirm password" value={form.confirm_password} onChange={handleChange} />
         <button type="submit">Register</button>
-        {error && <p>{error}</p>}
+        {error && (
+          <p style={{ color: "crimson", whiteSpace: "pre-line" }}>
+            {error}
+          </p>
+        )}
       </form>
     </section>
   );

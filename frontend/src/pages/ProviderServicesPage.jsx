@@ -43,7 +43,7 @@ export default function ProviderServicesPage() {
     <section>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
         <h1>My Services</h1>
-        <Link to="/provider/services/new" className="btn">Create Service</Link>
+        <Link to="/provider/services/new" className="btn-blue-accent">Create Service</Link>
       </div>
 
       {services.length === 0 ? (
@@ -67,8 +67,8 @@ export default function ProviderServicesPage() {
               </p>
 
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "12px" }}>
-                <Link to={`/services/${service.id}`}>View</Link>
-                <Link to={`/provider/services/${service.id}/edit`}>Edit</Link>
+                <Link to={`/services/${service.id}`} className="btn-blue">View</Link>
+                <Link to={`/provider/services/${service.id}/edit`} className="btn-yellow">Edit</Link>
                 <button
                   onClick={() => {
                     const confirmed = window.confirm("Are you sure you want to delete this service?");
@@ -77,6 +77,7 @@ export default function ProviderServicesPage() {
                     }
                   }}
                   disabled={deleteMutation.isPending}
+                  className="btn-red"
                 >
                   Delete
                 </button>

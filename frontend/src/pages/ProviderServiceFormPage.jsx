@@ -9,6 +9,7 @@ import {
 } from "../api/services";
 import { useMe } from "../hooks/useMe";
 import toast from "react-hot-toast";
+import { getErrorMessage } from "../utils/errorUtils";
 
 const initialForm = {
   category: "",
@@ -233,9 +234,7 @@ export default function ProviderServiceFormPage() {
 
         {mutation.isError && (
           <p style={{ color: "crimson" }}>
-            {mutation.error?.response?.data
-              ? JSON.stringify(mutation.error.response.data)
-              : "Failed to save service."}
+            {getErrorMessage(mutation.error)}
           </p>
         )}
       </form>

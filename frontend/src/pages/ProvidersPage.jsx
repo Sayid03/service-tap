@@ -157,7 +157,7 @@ export default function ProvidersPage() {
             Available only
           </label>
 
-          <button type="button" onClick={resetFilters}>
+          <button type="button" onClick={resetFilters} className="btn-blue-sky">
             Reset filters
           </button>
 
@@ -210,7 +210,7 @@ export default function ProvidersPage() {
                     <p><strong>Services:</strong> {provider.services_count ?? 0}</p>
                   </div>
 
-                  <Link to={`/providers/${provider.id}`} className="btn">
+                  <Link to={`/providers/${provider.id}`} className="btn-blue">
                     View provider
                   </Link>
                 </article>

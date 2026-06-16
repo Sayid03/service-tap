@@ -216,7 +216,7 @@ export default function ServicesPage() {
         </div>
 
         <div style={{ display: "flex", gap: "12px", alignItems: "center", marginTop: "16px", flexWrap: "wrap" }}>
-          <button type="button" onClick={resetFilters}>
+          <button type="button" onClick={resetFilters} className="btn-blue-sky">
             Reset filters
           </button>
           <span>{activeFiltersCount} filter(s) active</span>
@@ -258,7 +258,7 @@ export default function ServicesPage() {
                   <p><strong>Price:</strong> {service.price ?? "Negotiable"}</p>
                 </div>
 
-                <Link to={`/services/${service.id}`} className="btn">
+                <Link to={`/services/${service.id}`} className="btn-blue">
                   View details
                 </Link>
               </article>

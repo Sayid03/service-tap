@@ -134,7 +134,7 @@ export default function ProviderDetailPage() {
                   <p><strong>Location:</strong> {service.location || "Not specified"}</p>
                 </div>
 
-                <Link to={`/services/${service.id}`} className="btn">
+                <Link to={`/services/${service.id}`} className="btn-blue">
                   View service
                 </Link>
               </article>

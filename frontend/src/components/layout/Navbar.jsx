@@ -56,7 +56,7 @@ export default function Navbar() {
 
               <Link to="/dashboard" onClick={closeMenu}>Dashboard</Link>
 
-              <button type="button" onClick={handleLogout}>
+              <button type="button" onClick={handleLogout} className="btn-red-coral">
                 Logout
               </button>
             </>
